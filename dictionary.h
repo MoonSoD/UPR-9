@@ -12,11 +12,11 @@ typedef struct {
 } Dictionary;   
 
 
-void trim_newline(char *str);
+void remove_multi_new_line(char* string);
 
 char* translate_word(char* word_str, Dictionary dictionary, bool reverse);
 
-void translate_line_to_output(char* line_str, Dictionary dictionary, char* output_path, bool reverse);
+void translate_line_to_output(char* line_str, Dictionary dictionary, FILE* output_file, bool reverse);
 
 void translate_file_to_output(char* input_path, Dictionary dictionary, char* output_path, bool reverse);
 

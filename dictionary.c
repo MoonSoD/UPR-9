@@ -6,17 +6,14 @@
 
 #include "dictionary.h"
  
-void trim_newline(char* str)
+void trim_newlines(char* string)
 {
-    int i;
-    for (i = 0; str[i] != '\n'; i++)
-    {
-        // no need to trim
-        if (str[i] == '\0')
-            return;
-    }
-
-    str[i] = '\0';
+  size_t length = strlen(string);
+  while((length > 0) && (string[length - 1] == '\n'))
+  {
+      --length;
+      string[length] ='\0';
+  }
 }
 
 char* translate_word(char* word_str, Dictionary dictionary, bool reverse) 
@@ -25,16 +22,22 @@ char* translate_word(char* word_str, Dictionary dictionary, bool reverse)
     {
         DictionaryEntry entry = dictionary.entries[i];
 
+        trim_newlines(word_str);
+      
+        if (strcmp(word_str, "") == 0) {
+            return "";
+        }
+
         if (reverse) {
-            if (strcmp(word_str, entry.old_str) == 0)
-            {
-                return entry.new_str;
-            }
-        } else {
             if (strcmp(word_str, entry.new_str) == 0)
             {
                 return entry.old_str;
-            }
+            } 
+        } else {
+            if (strcmp(word_str, entry.old_str) == 0)
+            {
+                return entry.new_str;
+            } 
         }
       
     }
@@ -42,37 +45,34 @@ char* translate_word(char* word_str, Dictionary dictionary, bool reverse)
     return "<unknown>";
 }
 
-void translate_line_to_output(char* line_str, Dictionary dictionary, char* output_path, bool reverse)
+void translate_line_to_output(char* line_str, Dictionary dictionary, FILE* output_file, bool reverse)
 {
-    FILE* output_file = fopen(output_path, "a+");
+    char *token = strtok(line_str, "  ");
 
-    if (output_file == NULL) {
-        printf("Could not open output file");
-        exit(1);
-    }
-
-    char *token = strtok(line_str, " \r\n\0");
     if (token != NULL) {
         do 
         {   
             char* translated_token = translate_word(token, dictionary, reverse);
 
             fprintf(output_file, "%s ", translated_token);
-        } while ((token = strtok(NULL, " \r\n\0")) != NULL);
+        } while ((token = strtok(NULL, "  ")) != NULL);
 
         fprintf(output_file, "\n");
     }
-
-
-    fclose(output_file);
 }
 
 void translate_file_to_output(char* input_path, Dictionary dictionary, char* output_path, bool reverse)
 {
     FILE* input_file = fopen(input_path, "r");
+    FILE* output_file = fopen(output_path, "w");
 
     if (input_file == NULL) {
         printf("Could not open input file");
+        exit(1);
+    }
+
+    if (output_file == NULL) {
+        printf("Could not open output file");
         exit(1);
     }
 
@@ -80,10 +80,11 @@ void translate_file_to_output(char* input_path, Dictionary dictionary, char* out
 
     while(fgets(read_line, 255, input_file) != NULL)
     {
-        translate_line_to_output(read_line, dictionary, output_path, reverse);
+        translate_line_to_output(read_line, dictionary, output_file, reverse);
     }
 
     fclose(input_file);
+    fclose(output_file);
 }
 
 
@@ -121,8 +122,11 @@ Dictionary load_dictionary(char* dictionary_path)
 
     while(fgets(read_line, 255, file) != NULL)
     {
-        char* left = strdup(strtok(read_line, ", \r\n\0"));
-        char* right = strdup(strtok(NULL, ", \r\n\0"));
+        char* left = strdup(strtok(read_line, ","));
+        char* right = strdup(strtok(NULL, ","));
+
+        trim_newlines(left);
+        trim_newlines(right);
 
         append_entry_to_dictionary(&dictionary, (DictionaryEntry) {left, right});
 

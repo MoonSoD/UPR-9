@@ -3,10 +3,10 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "dictionary.h"
+#include "dictionary.h" 
 
 /*
-BONUS, stvrty argument reverse 
+BONUS, stvrty argument reverse  
 ./main dictionary-en-cs.csv input.txt output.txt reverse
 */
 int main(int argc, char** argv)
@@ -19,12 +19,11 @@ int main(int argc, char** argv)
     char* dictionary_path = argv[1];
     char* input_path = argv[2];
     char* output_path = argv[3];
-    int reverse;
+    int reverse = 0;
 
-    if (argv[4] != NULL && strcmp(argv[4], "reverse") == 0) 
+    if (argc > 5 && strcmp(argv[4], "reverse") == 0) 
     {
-        
-        reverse = atoi(argv[4]) == 1;
+        reverse = 1;
     }
 
     Dictionary dictionary = load_dictionary(dictionary_path);
